@@ -1,0 +1,37 @@
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "@react-navigation/native": "^6.0.8",
+    "@react-navigation/native-stack": "^6.5.0",
+    "axios": "^0.26.1",
+    "expo": "^41.0.0",
+    "expo-image-picker": "~10.1.4",
+    "expo-status-bar": "~1.0.4",
+    "react": "16.13.1",
+    "react-dom": "17.0.1",
+    "react-native": "~0.63.4",
+    "react-native-safe-area-context": "3.2.0",
+    "react-native-screens": "~3.0.0",
+    "react-native-web": "0.17.1",
+    "expo-file-system": "~11.0.2",
+    "expo-media-library": "~12.0.2",
+    "expo-permissions": "~12.0.1",
+    "expo-splash-screen": "~0.10.2",
+    "expo-updates": "~0.5.4",
+    "react-native-gesture-handler": "~1.10.2",
+    "react-native-reanimated": "~2.1.0",
+    "react-native-unimodules": "~0.13.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.9"
+  },
+  "private": true
+}
