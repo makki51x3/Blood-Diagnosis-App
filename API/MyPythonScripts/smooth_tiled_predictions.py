@@ -8,13 +8,10 @@
 
 """Do smooth predictions on an image from tiled prediction patches."""
 
-
 import numpy as np
 import scipy.signal
 from tqdm import tqdm
-
 import gc
-
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -22,7 +19,6 @@ if __name__ == '__main__':
     # See end of file for the rest of the __main__.
 else:
     PLOT_PROGRESS = False
-
 
 def _spline_window(window_size, power=2):
     """
@@ -56,14 +52,16 @@ def _window_2D(window_size, power=2):
         wind = cached_2d_windows[key]
     else:
         wind = _spline_window(window_size, power)
-        wind = np.expand_dims(np.expand_dims(wind, 3), 3)
+        wind = np.expand_dims(np.expand_dims(wind, 1), 1)      #Changed from 3, 3, to 1, 1 
         wind = wind * wind.transpose(1, 0, 2)
+        """
         if PLOT_PROGRESS:
             # For demo purpose, let's look once at the window:
             plt.imshow(wind[:, :, 0], cmap="viridis")
             plt.title("2D Windowing Function for a Smooth Blending of "
                       "Overlapping Patches")
             plt.show()
+        """
         cached_2d_windows[key] = wind
     return wind
 
@@ -78,13 +76,14 @@ def _pad_img(img, window_size, subdivisions):
     more_borders = ((aug, aug), (aug, aug), (0, 0))
     ret = np.pad(img, pad_width=more_borders, mode='reflect')
     # gc.collect()
-
+    """
     if PLOT_PROGRESS:
-        # For demo purpose, let's look once at the window:
+        # let's look once at the window:
         plt.imshow(ret)
         plt.title("Padded Image for Using Tiled Prediction Patches\n"
                   "(notice the reflection effect on the padded borders)")
         plt.show()
+        """
     return ret
 
 
@@ -108,7 +107,6 @@ def _rotate_mirror_do(im):
     Duplicate an np array (image) of shape (x, y, nb_channels) 8 times, in order
     to have all the possible rotations and mirrors of that image that fits the
     possible 90 degrees rotations.
-
     It is the D_4 (D4) Dihedral group:
     https://en.wikipedia.org/wiki/Dihedral_group
     """
@@ -130,7 +128,6 @@ def _rotate_mirror_undo(im_mirrs):
     merges a list of 8 np arrays (images) of shape (x, y, nb_channels) generated
     from the `_rotate_mirror_do` function. Each images might have changed and
     merging them implies to rotated them back in order and average things out.
-
     It is the D_4 (D4) Dihedral group:
     https://en.wikipedia.org/wiki/Dihedral_group
     """
@@ -149,7 +146,6 @@ def _rotate_mirror_undo(im_mirrs):
 def _windowed_subdivs(padded_img, window_size, subdivisions, nb_classes, pred_func):
     """
     Create tiled overlapping patches.
-
     Returns:
         5D numpy array of shape = (
             nb_patches_along_X,
@@ -158,7 +154,6 @@ def _windowed_subdivs(padded_img, window_size, subdivisions, nb_classes, pred_fu
             patches_resolution_along_Y,
             nb_output_channels
         )
-
     Note:
         patches_resolution_along_X == patches_resolution_along_Y == window_size
     """
@@ -171,7 +166,7 @@ def _windowed_subdivs(padded_img, window_size, subdivisions, nb_classes, pred_fu
 
     for i in range(0, padx_len-window_size+1, step):
         subdivs.append([])
-        for j in range(0, padx_len-window_size+1, step):
+        for j in range(0, pady_len-window_size+1, step):            #Changed padx to pady (Bug in original code)
             patch = padded_img[i:i+window_size, j:j+window_size, :]
             subdivs[-1].append(patch)
 
@@ -209,7 +204,7 @@ def _recreate_from_subdivs(subdivs, window_size, subdivisions, padded_out_shape)
     a = 0
     for i in range(0, padx_len-window_size+1, step):
         b = 0
-        for j in range(0, padx_len-window_size+1, step):
+        for j in range(0, pady_len-window_size+1, step):                #Changed padx to pady (Bug in original code)
             windowed_patch = subdivs[a, b]
             y[i:i+window_size, j:j+window_size] = y[i:i+window_size, j:j+window_size] + windowed_patch
             b += 1
@@ -221,7 +216,6 @@ def predict_img_with_smooth_windowing(input_img, window_size, subdivisions, nb_c
     """
     Apply the `pred_func` function to square patches of the image, and overlap
     the predictions to merge them smoothly.
-
     See 6th, 7th and 8th idea here:
     http://blog.kaggle.com/2017/05/09/dstl-satellite-imagery-competition-3rd-place-winners-interview-vladimir-sergey/
     """
@@ -263,182 +257,33 @@ def predict_img_with_smooth_windowing(input_img, window_size, subdivisions, nb_c
     prd = _unpad_img(padded_results, window_size, subdivisions)
 
     prd = prd[:input_img.shape[0], :input_img.shape[1], :]
-
+    """
     if PLOT_PROGRESS:
+        print(prd.shape)
+        
         plt.imshow(prd)
         plt.title("Smoothly Merged Patches that were Tiled Tighter")
         plt.show()
+    """
+        
     return prd
 
-
-def cheap_tiling_prediction(img, window_size, nb_classes, pred_func):
-    """
-    Does predictions on an image without tiling.
-    """
-    original_shape = img.shape
-    full_border = img.shape[0] + (window_size - (img.shape[0] % window_size))
-    prd = np.zeros((full_border, full_border, nb_classes))
-    tmp = np.zeros((full_border, full_border, original_shape[-1]))
-    tmp[:original_shape[0], :original_shape[1], :] = img
-    img = tmp
-    print(img.shape, tmp.shape, prd.shape)
-    for i in tqdm(range(0, prd.shape[0], window_size)):
-        for j in range(0, prd.shape[0], window_size):
-            im = img[i:i+window_size, j:j+window_size]
-            prd[i:i+window_size, j:j+window_size] = pred_func([im])
-    prd = prd[:original_shape[0], :original_shape[1]]
-    if PLOT_PROGRESS:
-        plt.imshow(prd)
-        plt.title("Cheaply Merged Patches")
-        plt.show()
-    return prd
-
-
-def get_dummy_img(xy_size=128, nb_channels=3):
-    """
-    Create a random image with different luminosity in the corners.
-
-    Returns an array of shape (xy_size, xy_size, nb_channels).
-    """
-    x = np.random.random((xy_size, xy_size, nb_channels))
-    x = x + np.ones((xy_size, xy_size, 1))
-    lin = np.expand_dims(
-        np.expand_dims(
-            np.linspace(0, 1, xy_size),
-            nb_channels),
-        nb_channels)
-    x = x * lin
-    x = x * lin.transpose(1, 0, 2)
-    x = x + x[::-1, ::-1, :]
-    x = x - np.min(x)
-    x = x / np.max(x) / 2
-    gc.collect()
-    if PLOT_PROGRESS:
-        plt.imshow(x)
-        plt.title("Random image for a test")
-        plt.show()
-    return x
-
-
-def round_predictions(prd, nb_channels_out, thresholds):
-    """
-    From a threshold list `thresholds` containing one threshold per output
-    channel for comparison, the predictions are converted to a binary mask.
-    """
-    assert (nb_channels_out == len(thresholds))
-    prd = np.array(prd)
-    for i in range(nb_channels_out):
-        # Per-pixel and per-channel comparison on a threshold to
-        # binarize prediction masks:
-        prd[:, :, i] = prd[:, :, i] > thresholds[i]
-    return prd
-
-
-if __name__ == '__main__':
-    ###
-    # Image:
-    ###
-
-    img_resolution = 600
-    # 3 such as RGB, but there could be more in other cases:
-    nb_channels_in = 3
-
-    # Get an image
-    input_img = get_dummy_img(img_resolution, nb_channels_in)
-    # Normally, preprocess the image for input in the neural net:
-    # input_img = to_neural_input(input_img)
-
-    ###
-    # Neural Net predictions params:
-    ###
-
-    # Number of output channels. E.g. a U-Net may output 10 classes, per pixel:
-    nb_channels_out = 3
-    # U-Net's receptive field border size, it does not absolutely
-    # need to be a divisor of "img_resolution":
-    window_size = 128
-
-    # This here would be the neural network's predict function, to used below:
-    def predict_for_patches(small_img_patches):
-        """
-        Apply prediction on images arranged in a 4D array as a batch.
-
-        Here, we use a random color filter for each patch so as to see how it
-        will blend.
-
-        Note that the np array shape of "small_img_patches" is:
-            (nb_images, x, y, nb_channels_in)
-        The returned arra should be of the same shape, except for the last
-        dimension which will go from nb_channels_in to nb_channels_out
-        """
-        small_img_patches = np.array(small_img_patches)
-        rand_channel_color = np.random.random(size=(
-            small_img_patches.shape[0],
-            1,
-            1,
-            small_img_patches.shape[-1])
-        )
-        return small_img_patches * rand_channel_color * 2
-
-    ###
-    # Doing cheap tiled prediction:
-    ###
-
-    # Predictions, blending the patches:
-    cheaply_predicted_img = cheap_tiling_prediction(
-        input_img, window_size, nb_channels_out, pred_func=predict_for_patches
-    )
-
-    ###
-    # Doing smooth tiled prediction:
-    ###
-
-    # The amount of overlap (extra tiling) between windows. A power of 2, and is >= 2:
-    subdivisions = 2
-
-    # Predictions, blending the patches:
-    smoothly_predicted_img = predict_img_with_smooth_windowing(
-        input_img, window_size, subdivisions,
-        nb_classes=nb_channels_out, pred_func=predict_for_patches
-    )
-
-    ###
-    # Demonstrating that the reconstruction is correct:
-    ###
-
-    # No more plots from now on
-    PLOT_PROGRESS = False
-
-    # useful stats to get a feel on how high will be the error relatively
-    print(
-        "Image's min and max pixels' color values:",
-        np.min(input_img),
-        np.max(input_img))
-
-    # First, defining a prediction function that just returns the patch without
-    # any modification:
-    def predict_same(small_img_patches):
-        """
-        Apply NO prediction on images arranged in a 4D array as a batch.
-        This implies that nb_channels_in == nb_channels_out: dimensions
-        and contained values are unchanged.
-        """
-        return small_img_patches
-
-    same_image_reconstructed = predict_img_with_smooth_windowing(
-        input_img, window_size, subdivisions,
-        nb_classes=nb_channels_out, pred_func=predict_same
-    )
-
-    diff = np.mean(np.abs(same_image_reconstructed - input_img))
-    print(
-        "Mean absolute reconstruction difference on pixels' color values:",
-        diff)
-    print(
-        "Relative absolute mean error on pixels' color values:",
-        100*diff/(np.max(input_img)) - np.min(input_img),
-        "%")
-    print(
-        "A low error (e.g.: 0.28 %) confirms that the image is still "
-        "the same before and after reconstruction if no changes are "
-        "made by the passed prediction function.")
+# prediction time augmentation for more accurate results
+def PTA(model,image):
+    
+    p0 = model.predict(np.expand_dims(image, axis=0))[0][:, :, 0]
+    
+    p1 = model.predict(np.expand_dims(np.fliplr(image), axis=0))[0][:, :, 0]
+    p1 = np.fliplr(p1)
+    
+    p2 = model.predict(np.expand_dims(np.flipud(image), axis=0))[0][:, :, 0]
+    p2 = np.flipud(p2)
+    
+    p3 = model.predict(np.expand_dims(np.fliplr(np.flipud(image)), axis=0))[0][:, :, 0]
+    p3 = np.fliplr(np.flipud(p3))
+    
+    thresh = 0.5
+    p_thresh_avg = ((p0 + p1 + p2 + p3) / 4) > thresh
+    p = (p_thresh_avg).astype(np.uint8)
+    p[p > 0 ] = 255
+    return p

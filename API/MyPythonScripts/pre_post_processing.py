@@ -165,7 +165,7 @@ def extractInfo(thresholded_img,img):
     #plt.imshow(dilation)
     
     #Now we create a marker and label the regions inside. 
-    ret3, markers = cv2.connectedComponents(dilation)
+    _, markers = cv2.connectedComponents(dilation)
     #plt.imshow(markers)
     
     labels = measure.label(markers, connectivity=markers.ndim)
