@@ -29,7 +29,7 @@ const HomeScreen = ({navigation}) => {
         setLoading(true);
         axios.post("https://b231-94-187-0-34.ngrok.io"+"/send-image/",{selectedImg:Image_URI},  config)
         .then((res) => {
-          console.log(res);
+          //console.log(res);
           if (res.status >= 200 && res.status <= 299) {
             setInfo(res.data.info);
             setMask(res.data.maskBase64);
