@@ -9,10 +9,13 @@ class FlaskTestCase(unittest.TestCase):
     def test_index(self):
         app.testing = True
         tester = app.test_client()
+
+        #import test image as base64
         with open(r"Blood-Diagnosis-App\API\MyPythonScripts\testImage.png", "rb") as img_file:
             base64Img = base64.b64encode(img_file.read())
         base64Img = "data:image/png;base64,"+str(base64Img.decode('utf-8'))
 
+        #send test image to api
         response = tester.post(
             "http://127.0.0.1:5000"+"/send-image/", 
             json={"selectedImg":"{}".format(base64Img)},
