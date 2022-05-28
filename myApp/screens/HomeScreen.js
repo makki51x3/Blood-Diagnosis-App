@@ -53,7 +53,7 @@ const HomeScreen = ({navigation}) => {
   
     return (
     <ImageBackground source= {require('../assets/background.png')}  resizeMode="cover" style={styles.imageBG}>
-      <View style={{justifyContent: "space-around",flex:1}}>
+      <View style={{justifyContent: "space-around",flex:1,backgroundColor:"rgba(0, 0, 0,0.3)",width:"100%"}}>
         <Br num={2} />
         <Image source={Image_URI===false?require('../assets/transparent.png'):{ uri: Image_URI }} style = {styles.image} />
         <IsVisibleTxt state={loading!==false}></IsVisibleTxt>
@@ -104,18 +104,20 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   image: {
-    height: (Platform.OS == "ios"|| Platform.OS =="android")?ScreenHeight*0.4:ScreenHeight*0.7, 
-    width: (Platform.OS == "ios"|| Platform.OS =="android")?ScreenWidth*0.7:ScreenWidth*0.4, 
+    height: ScreenHeight*0.4,
+    width: (Platform.OS == "ios"|| Platform.OS =="android")?ScreenWidth*0.7:ScreenHeight*0.4, 
     margin: 5, 
     resizeMode:"cover",
-    borderRadius:10 
+    borderRadius:10,
+    justifyContent:"center",
+    flexDirection:"column"
   },
   imageBG: {
     flex: 1,
     justifyContent: (Platform.OS == "ios"||Platform.OS =="android")? "space-evenly":"space-around",
     alignItems: "center",
     paddingTop: (Platform.OS == "ios"||Platform.OS =="android")? 30:0,
-    paddingBottom: (Platform.OS == "ios"||Platform.OS =="android")? 30:10,
+    paddingBottom: (Platform.OS == "ios"||Platform.OS =="android")? 30:0,
   },
   result: {
     justifyContent: "center",
@@ -151,4 +153,18 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
+
+
+
+// loading Text Interval
+// bundle.js:120913 Exit Interval
+// bundle.js:120936 Use effect exited
+
+// bundle.js:120918 Use effect entered
+
+// bundle.js:120921 App Is Ready
+// 2bundle.js:120909 loading Text Interval
+// bundle.js:120913 Exit Interval
+// bundle.js:120909 loading Text Interval
 
