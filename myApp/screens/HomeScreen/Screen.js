@@ -35,7 +35,7 @@ const HomeScreen = ({navigation}) => {
       //Check if any file is selected or not
       if (image !== "") {
         dispatch(updateLoading(true));
-        axios.post("https://b231-94-187-0-34.ngrok.io"+"/send-image/",{selectedImg:image},  config)
+        axios.post("https://cdab-94-187-11-155.ngrok.io/"+"/send-image/",{selectedImg:image},  config)
         .then((res) => {
           if (res.status >= 200 && res.status <= 299) {
             dispatch(updateInfo(res.data.info));

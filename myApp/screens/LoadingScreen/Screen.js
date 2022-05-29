@@ -14,48 +14,47 @@ const LoadingScreen = ({navigation})=>{
     const listOfTexts = useSelector((state) => state.loadingPageReducer.listOfTexts);
     const loadingText = useSelector((state) => state.loadingPageReducer.loadingText);
 
-    // animation variables
+    // Animation variables
     const Fade= new Animated.Value(1);
 
-    useEffect(() => {
+    useEffect(() => { // on mount start an exit timeout of 7 seconds
       setTimeout(
         () => {
         dispatch(updateAppIsReady(true));
-        }, 7000
+        navigation.navigate("Home");
+        }, 7430
       );
     }, []);
 
-    useEffect(() => {
-      if(appIsReady){
-        navigation.navigate("Home");
-      }
-    }, [appIsReady]);
-
-    useEffect(() => {
-      const textInterval = setTimeout(
-        () => {
-          dispatch(updateLoadingText(listOfTexts[Math.floor(Math.random() * (listOfTexts.length-1))]));
+    useEffect(() => {  // Animate text fade in and fade out then change it randomly every 3 seconds
+      if(!appIsReady){
+        const textInterval = setTimeout(
+          () => {
+            const num = Math.floor((Math.random()*100)) % (listOfTexts.length-1);
+            dispatch(updateLoadingText(listOfTexts[num]));
           }, 3000
-      );
+        );
 
-      Animated.sequence(
-        [
-          Animated.timing(Fade,{
-            toValue:1,
-            duration:1000, 
-            useNativeDriver: true 
-          }), //FadeOut
-          Animated.timing(Fade,{
-            delay:700,
-            toValue:0,
-            duration:1000, 
-            useNativeDriver: true 
-          }), //FadeIn
-        ]).start();
+        Animated.sequence(
+          [
+            Animated.timing(Fade,{ // Fade Out
+              toValue:1,
+              duration:1000, 
+              useNativeDriver: true 
+            }), 
+            Animated.timing(Fade,{ // Fade In
+              delay:700,
+              toValue:0,
+              duration:1000, 
+              useNativeDriver: true 
+            }), 
+          ]).start();
+
         return () => {
-          clearInterval(textInterval);
+          clearInterval(textInterval);  // Clearing the timeout to use it again
         }
-    }, [loadingText]);
+      }
+    }, [Fade]);
   
     return (
     <ImageBackground source= {require('../../assets/background.png')}  resizeMode="cover" style={styles.AppContainer}>
