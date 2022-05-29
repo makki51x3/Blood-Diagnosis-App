@@ -105,21 +105,6 @@ const styles = StyleSheet.create({
     backgroundColor:"rgba(0, 0, 0,0.1)",
     width:"100%"
   },
-  item: {
-    flex: 1,
-    backgroundColor: "#D4ECDD",
-    padding: 5,
-    fontWeight: "700",
-    alignItems: "center",
-  },
-  header: {
-    color: "#FAFFAF",
-    backgroundColor: "#152D35",
-    fontWeight: "700",
-    fontSize: 25,
-    textAlign: 'center',
-    padding: 5,
-  },
   image: {
     height: ScreenHeight*0.4,
     width: (Platform.OS == "ios"|| Platform.OS =="android")?ScreenWidth*0.7:ScreenHeight*0.4, 
@@ -133,21 +118,11 @@ const styles = StyleSheet.create({
     paddingTop: (Platform.OS == "ios"||Platform.OS =="android")? 30:0,
     paddingBottom: (Platform.OS == "ios"||Platform.OS =="android")? 30:0,
   },
-  result: {
-    justifyContent: "center",
-    backgroundColor: "#5584AC",
-    alignItems: "center",
-  },
   row: {
     flexDirection: 'row',
     justifyContent:"center",
     marginTop: ScreenHeight*0.07,
     },
-  text:{
-    color:"white",
-    fontWeight: "700",
-    fontSize: 25,
-  },
   btn:{
     marginRight:40,
     marginLeft:40,
