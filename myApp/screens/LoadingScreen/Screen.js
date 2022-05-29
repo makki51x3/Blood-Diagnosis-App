@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { ImageBackground, View, StyleSheet, Platform, ActivityIndicator, Animated} from "react-native";
 import React from 'react';
-import { updateLoadingText, updateAppIsReady } from "../../redux/slices/loadingPage";
+import { updateLoadingText, updateAppIsReady } from "../../redux/slices/loadingPageSlice";
 
 const LoadingScreen = ({navigation})=>{
 
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     loadingContainer:{
       width: "100%", 
       flex:1,
-      backgroundColor:"rgba(0, 0, 0,0.3)",
+      backgroundColor:"rgba(0, 0, 0,0.1)",
       justifyContent: (Platform.OS == "ios"||Platform.OS =="android")? "space-evenly":"space-around",
       alignItems: "center",
     },

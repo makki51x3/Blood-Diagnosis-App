@@ -94,8 +94,8 @@ def getRatio(image,debugging=False):
 ##########################################################################################################  
 
 def smoothBlending(img):
-    baseDir='C:\\Users\\1999m\\Desktop\\lira competition\\Model\\'
-    model = tf.keras.models.load_model(baseDir+'FINAL_pre_trained_unfrozen_unet_model_100epochs.h5', compile=False)
+    baseDir='C:\\Users\\1999m\\Desktop\\lira competition\\LIRA\\Blood-Diagnosis-App\\AI_models\\'
+    model = tf.keras.models.load_model(baseDir+'Codocyte_100_weights.h5', compile=False)
     ratio = 256/getRatio(img)
     #print("the ratio is\t",ratio)
     #plt.imshow(img)

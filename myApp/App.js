@@ -1,6 +1,6 @@
 import LoadingScreen from './screens/LoadingScreen/Screen';
-import HomeScreen from './screens/HomeScreen';
-import ResultScreen from './screens/ResultScreen';
+import HomeScreen from './screens/HomeScreen/Screen';
+import ResultScreen from './screens/ResultScreen/Screen';
 
 import { Provider } from 'react-redux';
 import React from 'react';
