@@ -1,16 +1,15 @@
 import {StyleSheet, TouchableOpacity, Text} from "react-native";
 import React from 'react';
 
-const IsVisibleBtn = ({navigation, state, info, mask, label}) => {
+const IsVisibleBtn = ({navigation, state}) => {
+
     if(state){
       return (
       <TouchableOpacity
       style={styles.btn}
-      onPress={()=>{
-        navigation.navigate('Result',{info: info, msk: mask, img: label});
-      }}
+      onPress={()=>{navigation.navigate('Result');}}
       underlayColor='#fff'>
-      <Text style={styles.btnText}>Results</Text>
+        <Text style={styles.btnText}>Results</Text>
       </TouchableOpacity>
       );
     }

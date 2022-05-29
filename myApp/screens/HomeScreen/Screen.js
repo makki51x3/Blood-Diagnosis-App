@@ -1,49 +1,56 @@
-import { useState, useEffect } from 'react';
-import Br from '../components/Br';
-import IsVisibleBtn from '../components/HomeScreen/IsVisibleBtn';
-import IsVisibleTxt from '../components/HomeScreen/IsVisibleTxt';
-import openImagePicker from '../components/HomeScreen/openImagePicker';
-
+import { useEffect } from 'react';
+import IsVisibleBtn from './Components/IsVisibleBtn';
+import IsVisibleTxt from './Components/IsVisibleTxt';
+import openImagePicker from './Components/openImagePicker';
 import React from 'react';
 import { Dimensions, StyleSheet,TouchableOpacity, Text, ImageBackground,  View, Image, Platform } from "react-native";
 import axios from "axios";
+
+import { useSelector, useDispatch } from "react-redux";
+import { updateMask, updateLabel, updateInfo } from "../../redux/slices/resultSlice";
+import { updateLoading, updateImage } from "../../redux/slices/homePageSlice";
 
 const ScreenHeight = Dimensions.get("window").height;
 const ScreenWidth = Dimensions.get("window").width;
 
 const HomeScreen = ({navigation}) => {
 
-    const [Image_URI, setImage_URI] = useState(false);
-    const [mask, setMask] = useState(false);
-    const [label, setLabel] = useState(false);
-    const [info, setInfo] = useState(false);
-    const [loading, setLoading] = useState(false);
+    // Get data from the redux store
+    const dispatch = useDispatch();
+    
+    // Results Slice Reducer
+    const mask = useSelector((state) => state.resultReducer.mask);
+
+    // Home Page Slice
+    const image = useSelector((state) => state.homePageReducer.image);
+    const loading = useSelector((state) => state.homePageReducer.loading);
   
-    useEffect(() => {if(mask!==false){navigation.navigate('Result',{info: info, msk: mask, img: label});}}, [mask,loading]);
+    useEffect(() => {if(mask!==""){navigation.navigate('Result');}}, [mask,loading]);
       
     const uploadImage = async () => {
       var config = { headers: {'Content-Type': 'application/json'}}
-
+      if(!""){
+        console.log("inside updload image if '' is false");
+      }
       //Check if any file is selected or not
-      if (Image_URI !== false) {
-        setLoading(true);
-        axios.post("https://b231-94-187-0-34.ngrok.io"+"/send-image/",{selectedImg:Image_URI},  config)
+      if (image !== "") {
+        dispatch(updateLoading(true));
+        axios.post("https://cdab-94-187-11-155.ngrok.io/"+"/send-image/",{selectedImg:image},  config)
         .then((res) => {
-          //console.log(res);
           if (res.status >= 200 && res.status <= 299) {
-            setInfo(res.data.info);
-            setMask(res.data.maskBase64);
-            setLabel(res.data.labelBase64);
+            dispatch(updateInfo(res.data.info));
+            dispatch(updateMask(res.data.maskBase64));
+            dispatch(updateLabel(res.data.labelBase64));
           } 
           else {
             alert('Server Error\n Try reuploading the image');
           }
-          setLoading(false);
+          dispatch(updateLoading(false));
         }, (error) => {
           // no Timeout
           console.log(error);
           alert("Failed to load resource.\n Try reuploading the image");
-          setLoading(false);
+          dispatch(updateLoading(false));
         });
       }
       else {
@@ -52,35 +59,35 @@ const HomeScreen = ({navigation}) => {
     }
   
     return (
-    <ImageBackground source= {require('../assets/background.png')}  resizeMode="cover" style={styles.imageBG}>
-      <View style={{justifyContent: "space-around",flex:1}}>
-        <Br num={2} />
-        <Image source={Image_URI===false?require('../assets/transparent.png'):{ uri: Image_URI }} style = {styles.image} />
-        <IsVisibleTxt state={loading!==false}></IsVisibleTxt>
-        <Br/>
-        <View style={(Platform.OS == "ios"|| Platform.OS =="android")?{justifyContent:"flex-end"}:[styles.row,{justifyContent:"center"}]}>
+    <ImageBackground source= {require('../../assets/background.png')}  resizeMode="cover" style={styles.imageBG}>
+      <View style={styles.container}>
+        <View style={styles.row}>
+          <Image source={image==""?require('../../assets/transparent.png'):{ uri: image }} style = {styles.image} />
+        </View>
+        <View style={styles.row}>
+          <IsVisibleTxt state={loading}></IsVisibleTxt>
+        </View>
+        <View style={styles.row}>
           <TouchableOpacity
             style={styles.btn}
             onPress={()=>{
-              setMask(false);
+              dispatch(updateMask(""));
               uploadImage();
             }}
             underlayColor='#fff'>
             <Text style={styles.btnText}>Run Diagnosis</Text>
           </TouchableOpacity>
-          <Br/>
           <TouchableOpacity
               style={styles.btn}
               onPress={()=>{
-                openImagePicker().then((res)=>{
-                  setImage_URI(res.Image_URI);
+                  openImagePicker().then((res)=>{
+                  dispatch(updateImage(res.Image_URI));
                 });
               }}
               underlayColor='#fff'>
               <Text style={styles.btnText}>Select Image</Text>
           </TouchableOpacity>
-          <Br/>
-          <IsVisibleBtn navigation={navigation} state={mask!==false} info={info} mask={mask} label={label}></IsVisibleBtn>
+          <IsVisibleBtn navigation={navigation} state={mask!==""} ></IsVisibleBtn>
         </View>
       </View>
     </ImageBackground>
@@ -88,6 +95,12 @@ const HomeScreen = ({navigation}) => {
   }
 
 const styles = StyleSheet.create({
+  container:{
+    justifyContent: "center",
+    flex:1,
+    backgroundColor:"rgba(0, 0, 0,0.1)",
+    width:"100%"
+  },
   item: {
     flex: 1,
     backgroundColor: "#D4ECDD",
@@ -104,18 +117,17 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   image: {
-    height: (Platform.OS == "ios"|| Platform.OS =="android")?ScreenHeight*0.4:ScreenHeight*0.7, 
-    width: (Platform.OS == "ios"|| Platform.OS =="android")?ScreenWidth*0.7:ScreenWidth*0.4, 
-    margin: 5, 
+    height: ScreenHeight*0.4,
+    width: (Platform.OS == "ios"|| Platform.OS =="android")?ScreenWidth*0.7:ScreenHeight*0.4, 
     resizeMode:"cover",
-    borderRadius:10 
+    borderRadius:10,
   },
   imageBG: {
     flex: 1,
     justifyContent: (Platform.OS == "ios"||Platform.OS =="android")? "space-evenly":"space-around",
     alignItems: "center",
     paddingTop: (Platform.OS == "ios"||Platform.OS =="android")? 30:0,
-    paddingBottom: (Platform.OS == "ios"||Platform.OS =="android")? 30:10,
+    paddingBottom: (Platform.OS == "ios"||Platform.OS =="android")? 30:0,
   },
   result: {
     justifyContent: "center",
@@ -123,7 +135,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   row: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    justifyContent:"center",
+    marginTop: ScreenHeight*0.07,
     },
   text:{
     color:"white",
@@ -151,4 +165,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-

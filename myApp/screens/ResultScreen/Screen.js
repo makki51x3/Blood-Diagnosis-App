@@ -1,19 +1,29 @@
 
-import { useState } from 'react';
 import React from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, Text, ImageBackground,  View, ScrollView, Platform, Button } from "react-native";
 
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import { useSelector, useDispatch } from "react-redux";
+import { updateIsShownImg, updateIsShownMsk } from "../../redux/slices/resultPageSlice";
 
 const ScreenHeight = Dimensions.get("window").height;
 const ScreenWidth = Dimensions.get("window").width;
 
 
-const ResultScreen = ({route}) => {
-    const { info, msk, img } = route.params;
-    const [isShownImg, setIsShownImg] = useState(false);
-    const [isShownMsk, setIsShownMsk] = useState(false);  
+const ResultScreen = () => {
+
+    // Get data from the redux store
+    const dispatch = useDispatch();
+
+    // Result Page Slice
+    const isShownImg = useSelector((state) => state.resultPageReducer.isShownImg);
+    const isShownMsk = useSelector((state) => state.resultPageReducer.isShownMsk);
+
+    // Results Slice Reducer
+    const msk = useSelector((state) => state.resultReducer.mask);
+    const img = useSelector((state) => state.resultReducer.label);
+    const info = useSelector((state) => state.resultReducer.info);
     
     async function downloadFile(uri, filename=Date.now().toString()){ //if not specified default filename is a timestamp
       const fileUri= `${FileSystem.documentDirectory}${filename}.png`; // destination
@@ -68,7 +78,7 @@ const ResultScreen = ({route}) => {
     return (
       <ScrollView contentContainerStyle={styles.result}>
         <View style={(Platform.OS == "ios"|| Platform.OS =="android")?null:styles.row}>
-          <TouchableOpacity onPress={()=>{setIsShownImg(!isShownImg);}}>
+          <TouchableOpacity onPress={()=>{dispatch(updateIsShownImg(!isShownImg));}}>
             <ImageBackground source={{ uri: img }} style = {styles.image}>
               {isShownImg && (
               <View style={styles.downloadContainer}>
@@ -77,7 +87,7 @@ const ResultScreen = ({route}) => {
               </View> )}
             </ImageBackground>
           </TouchableOpacity>
-          <TouchableOpacity  onPress={()=>{setIsShownMsk(!isShownMsk);}}>
+          <TouchableOpacity  onPress={()=>{dispatch(updateIsShownMsk(!isShownMsk));}}>
             <ImageBackground source={{uri: msk}} style = {styles.image} >
               {isShownMsk && (
               <View style={styles.downloadContainer}>
