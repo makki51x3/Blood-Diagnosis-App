@@ -25,15 +25,19 @@ const HomeScreen = ({navigation}) => {
     const image = useSelector((state) => state.homePageReducer.image);
     const loading = useSelector((state) => state.homePageReducer.loading);
   
-    useEffect(() => {if(mask!==""){navigation.navigate('Result');}}, [mask,loading]);
+    useEffect(
+      () => {
+        if(mask){
+          navigation.navigate('Result');
+        }
+      }, [mask,loading]
+    );
       
     const uploadImage = async () => {
       var config = { headers: {'Content-Type': 'application/json'}}
-      if(!""){
-        console.log("inside updload image if '' is false");
-      }
+      
       //Check if any file is selected or not
-      if (image !== "") {
+      if (image) {
         dispatch(updateLoading(true));
         axios.post("https://cdab-94-187-11-155.ngrok.io/"+"/send-image/",{selectedImg:image},  config)
         .then((res) => {
@@ -62,7 +66,7 @@ const HomeScreen = ({navigation}) => {
     <ImageBackground source= {require('../../assets/background.png')}  resizeMode="cover" style={styles.imageBG}>
       <View style={styles.container}>
         <View style={styles.row}>
-          <Image source={image==""?require('../../assets/transparent.png'):{ uri: image }} style = {styles.image} />
+          <Image source={!image?require('../../assets/transparent.png'):{ uri: image }} style = {styles.image} />
         </View>
         <View style={styles.row}>
           <IsVisibleTxt state={loading}></IsVisibleTxt>
@@ -87,7 +91,7 @@ const HomeScreen = ({navigation}) => {
               underlayColor='#fff'>
               <Text style={styles.btnText}>Select Image</Text>
           </TouchableOpacity>
-          <IsVisibleBtn navigation={navigation} state={mask!==""} ></IsVisibleBtn>
+          <IsVisibleBtn navigation={navigation} state={mask} ></IsVisibleBtn>
         </View>
       </View>
     </ImageBackground>
