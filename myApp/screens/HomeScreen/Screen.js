@@ -47,13 +47,13 @@ const HomeScreen = ({navigation}) => {
             dispatch(updateLabel(res.data.labelBase64));
           } 
           else {
-            alert('Server Error\n Try reuploading the image');
+            alert('Server Error\n Try re-uploading the image');
           }
           dispatch(updateLoading(false));
         }, (error) => {
           // no Timeout
           console.log(error);
-          alert("Failed to load resource.\n Try reuploading the image");
+          alert("Failed to load resource.\n Try re-uploading the image");
           dispatch(updateLoading(false));
         });
       }
